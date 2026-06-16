@@ -39,8 +39,13 @@
   EJS_threads = (window.isSecureContext && typeof SharedArrayBuffer !== 'undefined');
   EJS_loadStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
   EJS_saveStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
-  // Netplay: first player clicks Netplay → Host in EmulatorJS UI; others open same URL → Netplay → Join
-  // EmulatorJS handles room codes / WebRTC negotiation internally (LAN-only in Phase 3.0)
+  // Netplay: NOT supported in EmulatorJS v4.x (removed in v4.0; rewrite pending upstream).
+  // The dead v3 netplay code still ships in emulator.min.js but the v4 WASM cores lack
+  // the hooks it needs, so enabling the flags does nothing. Phase 3.1 will evaluate:
+  //   (a) RomM frontend (implements its own netplay around EmulatorJS)
+  //   (b) Self-host EmulatorJS-netplay-old Rust server + pin to v3.x cores (deprecated)
+  //   (c) Wait for upstream netplay rewrite (no ETA)
+  // For now: single-device play + save-state sync across devices is the working scope.
 </script>
 <script src="/static/emujs/data/loader.js"></script>
 </body>
