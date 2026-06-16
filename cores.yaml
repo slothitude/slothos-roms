@@ -1,0 +1,30 @@
+gba:
+  retroarch: mgba
+  ejs_core: gba
+  exts: [.gba, .zip]
+  thumbnails_repo: "Nintendo - Game Boy Advance"
+nes:
+  retroarch: nestopia
+  ejs_core: nes
+  exts: [.nes, .zip]
+  thumbnails_repo: "Nintendo - Nintendo Entertainment System"
+snes:
+  retroarch: snes9x
+  ejs_core: snes
+  exts: [.smc, .sfc, .zip]
+  thumbnails_repo: "Nintendo - Super Nintendo Entertainment System"
+psx:
+  retroarch: pcsx_rearmed
+  ejs_core: psx
+  exts: [.pbp, .iso, .bin, .cue, .chd]
+  thumbnails_repo: "Sony - PlayStation"
+arcade:
+  retroarch: fbneo
+  ejs_core: arcade
+  exts: [.zip, .7z]
+  thumbnails_repo: "Arcade - FinalBurn Alpha"
+n64:
+  retroarch: mupen64plus_next
+  ejs_core: n64
+  exts: [.z64, .v64, .n64, .rom, .zip]
+  thumbnails_repo: "Nintendo - Nintendo 64"

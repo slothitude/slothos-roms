@@ -1,0 +1,19 @@
+[Unit]
+Description=SlothOS ROMs (EmulatorJS LAN backend)
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=aaron
+WorkingDirectory=/home/aaron/slothos-roms
+ExecStart=/home/aaron/slothos-roms/.venv/bin/python3 -m uvicorn server:app --host 0.0.0.0 --port 8444 --no-access-log
+Restart=always
+RestartSec=5
+# Ensure runtime dirs exist
+ExecStartPre=/bin/mkdir -p /var/lib/slothos-roms /var/cache/slothos-roms/boxart
+Environment=SLOTHOS_CONFIG=/home/aaron/slothos-roms/config.yaml
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

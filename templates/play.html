@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ title }} — SlothOS Play</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
+  #game { width: 100vw; height: 100vh; }
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    padding: 0.4rem 0.7rem; font-size: 0.8rem; color: #888;
+    background: linear-gradient(180deg, rgba(20,10,30,0.8), rgba(0,0,0,0));
+    pointer-events: none;
+  }
+  .topbar a { color: #b5a3e6; pointer-events: auto; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/">← Library</a> · {{ system | upper }} · {{ title }} ·
+  <span id="devId">{{ device_id }}</span>
+</div>
+<div id="game"></div>
+<script>
+  // Device id — persisted in cookie via server, also here for clarity
+  EJS_player = '#game';
+  EJS_gameUrl = '/roms/{{ system }}/{{ filename|urlencode | replace("%2F", "%252F") }}';
+  EJS_core = '{{ ejs_core }}';
+  EJS_pathtodata = '/static/emujs/data/';
+  EJS_startOnLoaded = true;
+  EJS_threads = true;   // SharedArrayBuffer — requires COOP/COEP (server injects)
+  EJS_loadStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
+  EJS_saveStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
+  // Netplay: first player clicks Netplay → Host in EmulatorJS UI; others open same URL → Netplay → Join
+  // EmulatorJS handles room codes / WebRTC negotiation internally (LAN-only in Phase 3.0)
+</script>
+<script src="/static/emujs/data/loader.js"></script>
+</body>
+</html>
