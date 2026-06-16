@@ -167,7 +167,7 @@ async def library_one(rom_id: int = FPath(..., ge=1)):
     return _row_to_dict(row)
 
 
-@app.get("/roms/{system}/{filename:path}")
+@app.api_route("/roms/{system}/{filename:path}", methods=["GET", "HEAD"])
 async def serve_rom(system: str, filename: str):
     if system not in CORES:
         raise HTTPException(404, "Unknown system")
@@ -234,7 +234,8 @@ async def saves_get(device_id: str, rom_id: int):
     safe_device = Path(device_id).name  # prevent traversal
     save_path = SAVES_DIR / safe_device / f"{rom_id}.state"
     if not save_path.is_file():
-        raise HTTPException(404, "No save state")
+        # EmulatorJS expects 200/204 when no save exists, not 404 — return empty
+        return Response(b"", media_type="application/octet-stream", status_code=204)
     return FileResponse(str(save_path), media_type="application/octet-stream")
 
 

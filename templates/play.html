@@ -29,7 +29,14 @@
   EJS_core = '{{ ejs_core }}';
   EJS_pathtodata = '/static/emujs/data/';
   EJS_startOnLoaded = true;
-  EJS_threads = true;   // SharedArrayBuffer — requires COOP/COEP (server injects)
+  EJS_language = 'en-US';   // bundle ships en-US.json only (no bare en.json)
+  // Threads require SharedArrayBuffer, which browsers only expose on a secure
+  // context (HTTPS or http://localhost). On LAN http://192.168.0.33 we must
+  // fall back to single-threaded WASM. To enable threads on LAN, either:
+  //   (a) access via http://localhost:8444 on Lappy itself, or
+  //   (b) start Chrome with --unsafely-treat-insecure-origin-as-secure=http://192.168.0.33:8444
+  //   (c) wait for Phase 4 HTTPS.
+  EJS_threads = (window.isSecureContext && typeof SharedArrayBuffer !== 'undefined');
   EJS_loadStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
   EJS_saveStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
   // Netplay: first player clicks Netplay → Host in EmulatorJS UI; others open same URL → Netplay → Join
