@@ -3,10 +3,14 @@ catalog_db: /var/lib/slothos-roms/catalog.db
 boxart_cache_dir: /var/cache/slothos-roms/boxart
 saves_dir: /var/lib/slothos-roms/saves
 emujs_bundle_dir: /opt/slothos-roms/emujs
+emujs_v3_bundle_dir: /opt/slothos-roms/emujs-3.1.5
 cores_config: cores.yaml
 host: 0.0.0.0
 port: 8444
-# Phase 3.2 placeholder — self-hosted netplay relay on Oracle
+# Phase 3.1 self-hosted netplay server (EmulatorJS/EmulatorJS-netplay main branch, Node.js)
+netplay:
+  url: "http://192.168.0.33:8445"
+# Phase 3.3 placeholder — self-hosted netplay relay on Oracle
 webrtc:
   signaling_url: ""
   stun_servers: []

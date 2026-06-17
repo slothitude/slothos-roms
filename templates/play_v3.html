@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ title }} — SlothOS Play (v3 netplay)</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
+  #game { width: 100vw; height: 100vh; }
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    padding: 0.4rem 0.7rem; font-size: 0.8rem; color: #888;
+    background: linear-gradient(180deg, rgba(20,10,30,0.8), rgba(0,0,0,0));
+    pointer-events: none;
+  }
+  .topbar a { color: #b5a3e6; pointer-events: auto; }
+  .topbar .np { color: #ffd479; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/">← Library</a> · {{ system | upper }} · {{ title }} ·
+  <span class="np">v3.1.5 + netplay</span> ·
+  <span id="devId">{{ device_id }}</span>
+</div>
+<div id="game"></div>
+<script>
+  // v3.1.5 bundle + self-hosted netplay server (slothos Phase 3.1 spike).
+  // v3 cores are .data files (7z-compressed WASM); loader.js decompresses client-side.
+  // Netplay UI appears in the bottom bar once the game is running.
+  EJS_player = '#game';
+  EJS_gameUrl = '/roms/{{ system }}/{{ filename|urlencode | replace("%2F", "%252F") }}';
+  EJS_core = '{{ ejs_core }}';
+  EJS_pathtodata = '/static/emujs-3.1.5/data/';
+  EJS_startOnLoaded = true;
+  EJS_language = 'en-US';
+  EJS_threads = false;
+  // REQUIRED for netplay UI:
+  //   EJS_DEBUG_XX forces loader.js to fetch emu-main.js (the netplay UI code, ~53 KB).
+  //   Without it the production bundle's netplay code stays inert — no globe icon.
+  //   https://github.com/EmulatorJS/EmulatorJS/issues/1185#issuecomment-...
+  //   EmulatorJS 3.1.5 changelog: "introduced netplay, which currently works with old cores."
+  //   So EJS_oldCores is mandatory — the new cores (coreVer=2) dropped netplay hooks.
+  //   This forces data/old/*-old-wasm.data cores (coreVer=1, netplay-capable).
+  //   Limitation: only nes/snes/psx/arcade have old-wasm cores in 3.1.5 (no gba/n64 netplay).
+  EJS_DEBUG_XX = true;
+  EJS_oldCores = true;
+  // --- Netplay (v3.1.5 + main/server.js on :8445) ---
+  EJS_gameID = {{ rom_id }};
+  EJS_netplayUrl = '{{ netplay_url }}';
+  EJS_loadStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
+  EJS_saveStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
+</script>
+<script src="/static/emujs-3.1.5/data/loader.js"></script>
+</body>
+</html>

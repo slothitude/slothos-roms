@@ -47,6 +47,8 @@ DB_PATH = Path(CFG["catalog_db"])
 BOXART_DIR = Path(CFG["boxart_cache_dir"])
 SAVES_DIR = Path(CFG["saves_dir"])
 EMUJS_DIR = Path(CFG["emujs_bundle_dir"])
+EMUJS_V3_DIR = Path(CFG.get("emujs_v3_bundle_dir", "/opt/slothos-roms/emujs-3.1.5"))
+NETPLAY_URL = CFG.get("netplay", {}).get("url", "")
 CORES_PATH = HERE / CFG.get("cores_config", "cores.yaml")
 
 with CORES_PATH.open("r", encoding="utf-8") as fh:
@@ -84,10 +86,18 @@ templates = Jinja2Templates(directory=str(HERE / "templates"))
 
 @app.middleware("http")
 async def coop_coep_middleware(request: Request, call_next):
-    """Inject COOP/COEP headers on /play/* and /static/emujs/* for SharedArrayBuffer."""
+    """Inject COOP/COEP headers on /play/* and /static/emujs/* for SharedArrayBuffer.
+
+    v4 paths (/play/, /static/emujs/) get the full COEP treatment for threaded WASM.
+    v3 paths (/play-v3/, /static/emujs-3.1.5/) are excluded so cross-origin socket.io
+    to the netplay server on :8445 isn't blocked by CORP.
+    """
     resp: Response = await call_next(request)
     path = request.url.path
-    if path.startswith("/play") or path.startswith("/static/emujs"):
+    # match /play/ but NOT /play-v3/
+    v4_play = path.startswith("/play/") or path == "/play"
+    v4_static = path.startswith("/static/emujs/")
+    if v4_play or v4_static:
         resp.headers["Cross-Origin-Opener-Policy"] = "same-origin"
         resp.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
         resp.headers["Cross-Origin-Resource-Policy"] = "same-origin"
@@ -229,6 +239,31 @@ async def play(request: Request, rom_id: int = FPath(..., ge=1)):
     )
 
 
+@app.get("/play-v3/{rom_id}", response_class=HTMLResponse)
+async def play_v3(request: Request, rom_id: int = FPath(..., ge=1)):
+    """v3.1.5 bundle + self-hosted netplay. Spike path — v4 stays default."""
+    conn = db_conn()
+    row = conn.execute("SELECT * FROM roms WHERE id=?", (rom_id,)).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "ROM not found")
+    sys_cfg = CORES.get(row["system"], {})
+    device_id = request.cookies.get("slothos_device") or "anon"
+    return templates.TemplateResponse(
+        request,
+        "play_v3.html",
+        {
+            "title": row["title"],
+            "system": row["system"],
+            "filename": row["filename"],
+            "rom_id": row["id"],
+            "ejs_core": sys_cfg.get("ejs_core", row["system"]),
+            "device_id": device_id,
+            "netplay_url": NETPLAY_URL,
+        },
+    )
+
+
 @app.get("/api/saves/{device_id}/{rom_id}")
 async def saves_get(device_id: str, rom_id: int):
     safe_device = Path(device_id).name  # prevent traversal
@@ -278,6 +313,14 @@ else:
             503,
             "EmulatorJS bundle not installed. Run scripts/fetch-emujs.sh on Lappy.",
         )
+
+
+if EMUJS_V3_DIR.is_dir():
+    app.mount(
+        "/static/emujs-3.1.5",
+        StaticFiles(directory=str(EMUJS_V3_DIR)),
+        name="emujs-v3",
+    )
 
 
 if __name__ == "__main__":
