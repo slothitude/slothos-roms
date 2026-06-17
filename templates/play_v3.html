@@ -48,6 +48,15 @@
   // --- Netplay (v3.1.5 + main/server.js on :8445) ---
   EJS_gameID = {{ rom_id }};
   EJS_netplayUrl = '{{ netplay_url }}';
+  // WebRTC ICE servers — emu-main.js gates room creation on EJS_TURN_URLS being
+  // non-empty ("Netplay Currently Unavailable" if null/[]). STUN is enough for
+  // LAN: gathers host + srflx candidates; no media flows through it. Public
+  // Google STUN is fine on LAN (leaks nothing but public IP). For WAN/airgap
+  // Phase 3.3, replace with self-hosted coturn on Oracle.
+  EJS_TURN_URLS = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ];
   EJS_loadStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
   EJS_saveStateURL = '/api/saves/{{ device_id }}/{{ rom_id }}';
 </script>
